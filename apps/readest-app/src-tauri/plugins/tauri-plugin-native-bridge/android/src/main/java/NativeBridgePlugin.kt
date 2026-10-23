@@ -129,7 +129,6 @@ class LockScreenOrientationRequestArgs {
 @InvokeArg
 class SetScreenBrightnessRequestArgs {
     var brightness: Double? = null // 0.0 to 1.0
-    var persist: Boolean? = null // true: session-only tweak in System Screen Brightness mode
 }
 
 @InvokeArg
@@ -395,13 +394,13 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
         override fun onActivityDestroyed(a: Activity) {}
     }
 
-    // Manual reading brightness (not persist), kept across a background trip.
+    // Last brightness the reader set (slider, swipe or manual mode), kept across
+    // a background trip; cleared when the reader releases control.
     private var manualBrightness: Float? = null
 
-    // The system owns brightness across a background trip, except a manual
-    // reading brightness, which is re-applied here: JS re-applies it on
-    // `visibilitychange`, but after a screen lock that can land before this
-    // resume and be wiped by the release.
+    // Re-apply the reader's brightness after a background trip or screen lock;
+    // JS re-applies only manual mode on `visibilitychange`, and that can land
+    // before this resume and be wiped.
     private fun restoreBrightnessOnResume() {
         val layoutParams = activity.window.attributes
         layoutParams.screenBrightness = manualBrightness ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
@@ -1108,7 +1107,7 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
                     return
                 }
                 layoutParams.screenBrightness = brightness
-                manualBrightness = if (args.persist == true) null else brightness
+                manualBrightness = brightness
             }
 
             activity.window.attributes = layoutParams
