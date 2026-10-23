@@ -183,7 +183,10 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
         // that take input restore pointer-events themselves.
         'pointer-events-none left-0 top-0 w-full',
         isHeaderVisible && 'bg-base-100',
-        window.innerWidth < 640 ? 'fixed z-20' : 'absolute',
+        window.innerWidth < 640 ? 'fixed' : 'absolute',
+        // An open menu must stack above the TTS mini player (z-40) and its
+        // "Back to Read Aloud" pill (z-50), siblings in the same book cell.
+        isDropdownOpen ? 'z-[60]' : window.innerWidth < 640 && 'z-20',
       )}
       style={{
         paddingTop: appService?.hasSafeAreaInset ? `${insets.top}px` : '0px',
