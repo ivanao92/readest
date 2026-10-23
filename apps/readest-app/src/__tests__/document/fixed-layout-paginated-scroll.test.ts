@@ -88,3 +88,41 @@ describe('fixed-layout horizontal pan lock (#5976)', () => {
     ).toEqual({ scrollLeft: 200, scrollTop: 0 });
   });
 });
+
+describe('fixed-layout zoom keeps the viewport centre', () => {
+  it('centres a page that fit the viewport once zoom makes it overflow', () => {
+    // Fit-page at 100% (centre fraction 0.5) zoomed until the page is 2000px
+    // tall in an 800px viewport: the middle of the page must be in view, not
+    // its top.
+    expect(
+      computePaginatedScroll({
+        elementWidth: 800,
+        containerWidth: 800,
+        containerHeight: 800,
+        scrollHeight: 2000,
+        scrollTop: 0,
+        scrollLeft: 0,
+        pageTurn: false,
+        lockPanX: false,
+        centerFraction: 0.5,
+      }),
+    ).toEqual({ scrollLeft: 0, scrollTop: 600 });
+  });
+
+  it('keeps the point the reader was looking at in the centre', () => {
+    // Viewing the lower part (centre at 3/4 of the page) before zooming in.
+    expect(
+      computePaginatedScroll({
+        elementWidth: 800,
+        containerWidth: 800,
+        containerHeight: 800,
+        scrollHeight: 4000,
+        scrollTop: 0,
+        scrollLeft: 0,
+        pageTurn: false,
+        lockPanX: false,
+        centerFraction: 0.75,
+      }),
+    ).toEqual({ scrollLeft: 0, scrollTop: 2600 });
+  });
+});
