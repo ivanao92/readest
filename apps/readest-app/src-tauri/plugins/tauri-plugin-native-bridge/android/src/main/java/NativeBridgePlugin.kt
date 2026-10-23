@@ -129,6 +129,7 @@ class LockScreenOrientationRequestArgs {
 @InvokeArg
 class SetScreenBrightnessRequestArgs {
     var brightness: Double? = null // 0.0 to 1.0
+    var persist: Boolean? = null // true: session-only tweak in System Screen Brightness mode
 }
 
 @InvokeArg
@@ -383,7 +384,7 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
     // Tauri declares Plugin.onResume but never registers the observer that calls it.
     private val lifecycleCallbacks = object : Application.ActivityLifecycleCallbacks {
         override fun onActivityResumed(resumed: Activity) {
-            if (resumed === activity) releaseBrightnessOverride()
+            if (resumed === activity) restoreBrightnessOnResume()
         }
 
         override fun onActivityCreated(a: Activity, b: Bundle?) {}
@@ -394,11 +395,16 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
         override fun onActivityDestroyed(a: Activity) {}
     }
 
-    // The system owns brightness across a background trip: drop our window
-    // override on resume and keep whatever brightness the system shows now.
-    private fun releaseBrightnessOverride() {
+    // Manual reading brightness (not persist), kept across a background trip.
+    private var manualBrightness: Float? = null
+
+    // The system owns brightness across a background trip, except a manual
+    // reading brightness, which is re-applied here: JS re-applies it on
+    // `visibilitychange`, but after a screen lock that can land before this
+    // resume and be wiped by the release.
+    private fun restoreBrightnessOnResume() {
         val layoutParams = activity.window.attributes
-        layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+        layoutParams.screenBrightness = manualBrightness ?: WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
         activity.window.attributes = layoutParams
     }
 
@@ -1095,12 +1101,14 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
 
             if (brightness == null || brightness < 0.0) {
                 layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                manualBrightness = null
             } else {
                 if (brightness > 1.0) {
                     invoke.reject("Brightness must be between 0.0 and 1.0, or null to use system brightness")
                     return
                 }
                 layoutParams.screenBrightness = brightness
+                manualBrightness = if (args.persist == true) null else brightness
             }
 
             activity.window.attributes = layoutParams
