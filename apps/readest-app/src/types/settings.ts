@@ -496,6 +496,7 @@ export interface SystemSettings {
   /** Hide the e-ink library's Previous/Next buttons; keys still page. */
   hideBookshelfPageButtons: boolean;
   alwaysShowStatusBar: boolean;
+  alwaysShowBottomBar: boolean;
   openLastBooks: boolean;
   lastOpenBooks: string[];
   autoImportBooksOnOpen: boolean;

@@ -11,6 +11,10 @@ const ABOVE_DESKTOP_BAR = 60;
 const PANEL_GAP = 8;
 const BASE_OFFSET = 16;
 
+/** Band of book text (px) kept clear for a bottom bar that is always shown. */
+export const getBottomBarClearance = (usesMobileBar: boolean, safeAreaBottom: number): number =>
+  usesMobileBar ? ABOVE_MOBILE_BAR - PANEL_GAP + safeAreaBottom : ABOVE_DESKTOP_BAR - PANEL_GAP;
+
 /**
  * Bottom offset (px) of the TTS mini player, excluding the safe-area inset
  * (applied separately as margin-bottom). The card stacks above whatever
@@ -49,7 +53,12 @@ export const getTTSMiniPlayerBottomOffset = (
 export const getTTSMiniPlayerClearance = (
   viewSettings: ViewSettings,
   safeAreaBottom: number,
+  { barVisible = false, usesMobileBar = false } = {},
 ): number => {
   if (viewSettings.ttsPlayerStyle !== 'minimal') return 0;
-  return getTTSMiniPlayerBottomOffset(viewSettings) + TTS_MINI_PLAYER_HEIGHT + safeAreaBottom;
+  return (
+    getTTSMiniPlayerBottomOffset(viewSettings, { barVisible, usesMobileBar }) +
+    TTS_MINI_PLAYER_HEIGHT +
+    safeAreaBottom
+  );
 };

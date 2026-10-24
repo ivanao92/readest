@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   TTS_MINI_PLAYER_HEIGHT,
+  getBottomBarClearance,
   getTTSMiniPlayerBottomOffset,
   getTTSMiniPlayerClearance,
 } from '@/app/reader/utils/ttsMiniPlayerPosition';
@@ -142,5 +143,21 @@ describe('getTTSMiniPlayerClearance', () => {
     expect(
       getTTSMiniPlayerClearance(settings({ ttsPlayerStyle: 'minimal', showFooter: false }), 0),
     ).toBe(16 + TTS_MINI_PLAYER_HEIGHT);
+  });
+});
+
+describe('always-shown bottom bar', () => {
+  it('reserves the bar height (plus safe area on mobile) for book text', () => {
+    expect(getBottomBarClearance(true, 10)).toBe(74);
+    expect(getBottomBarClearance(false, 10)).toBe(52);
+  });
+
+  it('reserves the minimal mini player above the bar, not at its resting spot', () => {
+    expect(
+      getTTSMiniPlayerClearance(settings({ ttsPlayerStyle: 'minimal' }), 0, {
+        barVisible: true,
+        usesMobileBar: true,
+      }),
+    ).toBe(72 + TTS_MINI_PLAYER_HEIGHT);
   });
 });

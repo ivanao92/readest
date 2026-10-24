@@ -117,7 +117,8 @@ import ImageViewer from './ImageViewer';
 import ImageContextMenu from './ImageContextMenu';
 import TableViewer from './TableViewer';
 import ExternalLinkConfirm from './ExternalLinkConfirm';
-import { getTTSMiniPlayerClearance } from '../utils/ttsMiniPlayerPosition';
+import { getBottomBarClearance, getTTSMiniPlayerClearance } from '../utils/ttsMiniPlayerPosition';
+import { isForcedMobileLayout } from '../utils/mobileLayout';
 import { getDrawingDockClearance } from '../utils/drawingDock';
 
 declare global {
@@ -937,8 +938,22 @@ const FoliateViewer: React.FC<{
     const moreTopInset = showTopHeader ? Math.max(0, 16 - insets.top) : 0;
     // Only the persistent 'minimal' card reserves a band; the 'full' one
     // auto-hides with the toolbar and overlaps instead (#5310).
+    // An always-shown bottom bar keeps its band of text clear, and the
+    // minimal mini player then rests above it. Mirrors TTSMiniPlayer's split.
+    const alwaysShowBottomBar = settings.alwaysShowBottomBar;
+    const usesMobileBar =
+      isForcedMobileLayout(appService?.isMobile, isIPhoneDuo) ||
+      window.innerWidth < 640 ||
+      window.innerHeight < 640;
+    const safeAreaBottom = appService?.hasSafeAreaInset ? gridInsets.bottom * 0.33 : 0;
+    const bottomBarClearance = alwaysShowBottomBar
+      ? getBottomBarClearance(usesMobileBar, safeAreaBottom)
+      : 0;
     const miniPlayerClearance = viewState?.ttsEnabled
-      ? getTTSMiniPlayerClearance(viewSettings, gridInsets.bottom * 0.33)
+      ? getTTSMiniPlayerClearance(viewSettings, gridInsets.bottom * 0.33, {
+          barVisible: alwaysShowBottomBar,
+          usesMobileBar,
+        })
       : 0;
     const moreBottomInset = showBottomFooter
       ? Math.max(0, Math.max(miniPlayerClearance, 16) - insets.bottom)
@@ -958,6 +973,7 @@ const FoliateViewer: React.FC<{
     const bottomMargin = Math.max(
       (showBottomFooter ? insets.bottom : viewInsets.bottom) + moreBottomInset,
       drawingDock?.bottom ?? 0,
+      bottomBarClearance,
     );
     const leftMargin = (isIPhoneDuo ? viewInsets.left : insets.left) + moreLeftInset;
     viewRef.current?.renderer.setAttribute('margin-top', `${topMargin}px`);
@@ -977,6 +993,7 @@ const FoliateViewer: React.FC<{
       const scrollBottom = Math.max(
         footerVisible ? Math.max(footerBarHeight, miniPlayerClearance) : miniPlayerClearance,
         drawingDock?.bottom ?? 0,
+        bottomBarClearance,
       );
       setScrollMargins({ top: bookData?.isFixedLayout ? 0 : scrollTop, bottom: scrollBottom });
     } else {
@@ -1193,6 +1210,7 @@ const FoliateViewer: React.FC<{
     viewSettings?.noContinuousScroll,
     viewState?.ttsEnabled,
     viewState?.drawingEnabled,
+    settings.alwaysShowBottomBar,
     // Switching Player Style changes whether a band is reserved at all.
     viewSettings?.ttsPlayerStyle,
     // footerReservesBand inputs: the band must collapse/return live when the

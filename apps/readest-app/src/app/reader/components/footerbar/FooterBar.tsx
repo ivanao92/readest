@@ -10,6 +10,7 @@ import { FIXED_LAYOUT_FORMATS } from '@/types/book';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDeviceControlStore } from '@/store/deviceStore';
 import { useThemeStore } from '@/store/themeStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { eventDispatcher } from '@/utils/event';
 import type { FooterBarProps, NavigationHandlers, FooterBarChildProps } from './types';
 import { debounce } from '@/utils/debounce';
@@ -45,7 +46,9 @@ const FooterBar: React.FC<FooterBarProps> = ({
   const viewSettings = getViewSettings(bookKey);
 
   const actionTab = hoveredBookKey === bookKey ? bottomBarTab : '';
-  const isVisible = hoveredBookKey === bookKey;
+  const isHovered = hoveredBookKey === bookKey;
+  const alwaysShowBottomBar = useSettingsStore((s) => s.settings.alwaysShowBottomBar);
+  const isVisible = isHovered || alwaysShowBottomBar;
 
   const docs = view?.renderer.getContents() ?? [];
   const pointerInDoc = docs.some(({ doc }) => doc?.body?.style.cursor === 'pointer');
@@ -199,7 +202,7 @@ const FooterBar: React.FC<FooterBarProps> = ({
   }, [hoveredBookKey]);
 
   const footerBarRef = useRef<HTMLDivElement>(null);
-  useSpatialNavigation(footerBarRef, isVisible);
+  useSpatialNavigation(footerBarRef, isHovered);
 
   const forceMobileLayout = isForcedMobileLayout(appService?.isMobile, isIPhoneDuo);
 

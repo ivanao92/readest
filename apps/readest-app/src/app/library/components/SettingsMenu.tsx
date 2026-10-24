@@ -56,6 +56,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
   const { settings, setSettingsDialogOpen } = useSettingsStore();
   const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(settings.alwaysOnTop);
   const [isAlwaysShowStatusBar, setIsAlwaysShowStatusBar] = useState(settings.alwaysShowStatusBar);
+  const [isAlwaysShowBottomBar, setIsAlwaysShowBottomBar] = useState(settings.alwaysShowBottomBar);
   const [isOpenLastBooks, setIsOpenLastBooks] = useState(settings.openLastBooks);
   const [isAutoImportBooksOnOpen, setIsAutoImportBooksOnOpen] = useState(
     settings.autoImportBooksOnOpen,
@@ -153,6 +154,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
     const newValue = !settings.alwaysShowStatusBar;
     saveSysSettings(envConfig, 'alwaysShowStatusBar', newValue);
     setIsAlwaysShowStatusBar(newValue);
+  };
+
+  const toggleAlwaysShowBottomBar = () => {
+    const newValue = !settings.alwaysShowBottomBar;
+    saveSysSettings(envConfig, 'alwaysShowBottomBar', newValue);
+    setIsAlwaysShowBottomBar(newValue);
   };
 
   const toggleAutoImportBooksOnOpen = () => {
@@ -408,6 +415,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
           onClick={toggleAlwaysShowStatusBar}
         />
       )}
+
+      <MenuItem
+        label={_('Always Show Bottom Bar')}
+        toggled={isAlwaysShowBottomBar}
+        onClick={toggleAlwaysShowBottomBar}
+      />
       <MenuItem
         label={themeModeLabel}
         Icon={

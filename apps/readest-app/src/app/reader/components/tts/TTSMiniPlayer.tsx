@@ -18,6 +18,7 @@ import { RiForward30Line, RiReplay15Line } from 'react-icons/ri';
 import { Insets } from '@/types/misc';
 import { useEnv } from '@/context/EnvContext';
 import { useReaderStore } from '@/store/readerStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { useBookProgress } from '@/store/readerProgressStore';
 import { useBookDataStore } from '@/store/bookDataStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -134,7 +135,8 @@ const TTSMiniPlayer = ({
   // dismissed, or a 16px resting offset. Mirrors FooterBar's mobile/desktop
   // layout split (see forceMobileLayout there) to pick the right bar height.
   const viewSettings = getViewSettings(bookKey);
-  const barVisible = hoveredBookKey === bookKey;
+  const alwaysShowBottomBar = useSettingsStore((s) => s.settings.alwaysShowBottomBar);
+  const barVisible = hoveredBookKey === bookKey || alwaysShowBottomBar;
   const safeAreaMargin = appService?.hasSafeAreaInset ? gridInsets.bottom * 0.33 : 0;
   const forceMobileLayout = isForcedMobileLayout(appService?.isMobile, isIPhoneDuo);
   const usesMobileBar = forceMobileLayout || window.innerWidth < 640 || window.innerHeight < 640;
