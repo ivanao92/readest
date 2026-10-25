@@ -108,6 +108,8 @@ pub struct InstallPackageResponse {
 pub struct SetSystemUIVisibilityRequest {
     pub visible: bool,
     pub dark_mode: bool,
+    #[serde(default)]
+    pub navigation_bar: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -854,4 +856,19 @@ pub struct WebBrowserCookiesRequest {
 #[derive(Debug, Deserialize)]
 pub struct WebBrowserCookiesResponse {
     pub cookies: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn system_ui_request_keeps_navigation_bar_flag() {
+        let req: SetSystemUIVisibilityRequest =
+            serde_json::from_str(r#"{"visible":false,"darkMode":true,"navigationBar":true}"#)
+                .unwrap();
+        assert!(req.navigation_bar);
+        let json = serde_json::to_value(&req).unwrap();
+        assert_eq!(json["navigationBar"], true);
+    }
 }

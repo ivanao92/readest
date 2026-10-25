@@ -431,7 +431,16 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
           onClick={toggleAlwaysShowStatusBar}
         />
       )}
-
+      <MenuItem
+        label={_('Always Show Top Bar')}
+        toggled={isAlwaysShowTopBar}
+        onClick={toggleAlwaysShowTopBar}
+      />
+      <MenuItem
+        label={_('Always Show Bottom Bar')}
+        toggled={isAlwaysShowBottomBar}
+        onClick={toggleAlwaysShowBottomBar}
+      />
       {appService?.isAndroidApp && (
         <MenuItem
           label={_('Always Show Navigation Bar')}
@@ -439,18 +448,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
           onClick={toggleAlwaysShowNavigationBar}
         />
       )}
-
-      <MenuItem
-        label={_('Always Show Top Bar')}
-        toggled={isAlwaysShowTopBar}
-        onClick={toggleAlwaysShowTopBar}
-      />
-
-      <MenuItem
-        label={_('Always Show Bottom Bar')}
-        toggled={isAlwaysShowBottomBar}
-        onClick={toggleAlwaysShowBottomBar}
-      />
       <MenuItem
         label={themeModeLabel}
         Icon={
