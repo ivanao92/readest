@@ -163,7 +163,7 @@ const HeaderBar: React.FC<HeaderBarProps> = ({
 
   const isHeaderCompact = headerWidth > 0 && headerWidth < 350;
   const insets = window.innerWidth < 640 ? screenInsets : gridInsets;
-  const isHeaderVisible = hoveredBookKey === bookKey || isDropdownOpen;
+  const isHeaderVisible = hoveredBookKey === bookKey || isDropdownOpen || settings.alwaysShowTopBar;
   const isMobile = appService?.isMobile || window.innerWidth < 640;
   const forceMobileLayout = isForcedMobileLayout(appService?.isMobile, isIPhoneDuo);
   const triggerHeight = viewSettings ? getHeaderTriggerHeight(gridInsets.top, viewSettings) : 0;

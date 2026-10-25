@@ -143,7 +143,11 @@ const Reader: React.FC<{ ids?: string }> = ({ ids }) => {
     if (!appService?.isMobileApp) return;
     const systemUIVisible = !!hoveredBookKey || settings.alwaysShowStatusBar;
     const visible = !!(systemUIVisible && !systemUIAlwaysHidden);
-    setSystemUIVisibility({ visible, darkMode: isDarkMode }).then(() => {
+    setSystemUIVisibility({
+      visible,
+      darkMode: isDarkMode,
+      navigationBar: settings.alwaysShowNavigationBar,
+    }).then(() => {
       // iPhone Duo's status bar carries a side inset of its own (its strip):
       // re-read it so the toolbar chrome clears the strip. Other devices never
       // re-read here.
@@ -155,7 +159,7 @@ const Reader: React.FC<{ ids?: string }> = ({ ids }) => {
       dismissSystemUI();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hoveredBookKey]);
+  }, [hoveredBookKey, settings.alwaysShowNavigationBar]);
 
   return libraryLoaded && settings.globalReadSettings ? (
     <div

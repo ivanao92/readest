@@ -46,6 +46,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.activity.result.ActivityResultLauncher
@@ -105,6 +106,7 @@ class InstallPackageRequestArgs {
 class SetSystemUIVisibilityRequestArgs {
     var visible: Boolean? = false
     var darkMode: Boolean? = false
+    var navigationBar: Boolean? = false // keep the system navigation bar shown
 }
 
 @InvokeArg
@@ -807,15 +809,42 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
         }
     }
 
+    private var navBarListenerInstalled = false
+    @Volatile private var keepNavBar = false
+
+    // The window draws edge to edge and the web insets only carry the display
+    // cutout, so a shown navigation bar would cover the page. Pad the content
+    // view by the bar instead; the web layout then needs no change.
+    // ponytail: below Android Q the legacy flags path still hides the bar.
+    private fun keepNavigationBarClear(show: Boolean, darkMode: Boolean) {
+        keepNavBar = show
+        val content = activity.findViewById<View>(android.R.id.content) ?: return
+        content.setBackgroundColor(if (darkMode) Color.BLACK else Color.WHITE)
+        WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+            .isAppearanceLightNavigationBars = !darkMode
+        if (!navBarListenerInstalled) {
+            navBarListenerInstalled = true
+            ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
+                val nav = if (keepNavBar) insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+                    else androidx.core.graphics.Insets.NONE
+                v.setPadding(nav.left, 0, nav.right, nav.bottom)
+                insets
+            }
+        }
+        ViewCompat.requestApplyInsets(content)
+    }
+
     @Command
     fun set_system_ui_visibility(invoke: Invoke) {
         val args = invoke.parseArgs(SetSystemUIVisibilityRequestArgs::class.java)
         val visible = args.visible ?: false
         var isDarkMode = args.darkMode ?: false
+        val showNavBar = args.navigationBar ?: false
         val ret = JSObject()
         try {
             val window = activity.window
             val decorView = window.decorView
+            keepNavigationBarClear(showNavBar, isDarkMode)
             if (!visible) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     window.attributes.layoutInDisplayCutoutMode =
@@ -845,12 +874,10 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
                             WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
                         )
                     }
-                    if (visible) {
-                        controller.show(WindowInsets.Type.statusBars())
-                        controller.hide(WindowInsets.Type.navigationBars())
-                    } else {
-                        controller.hide(WindowInsets.Type.systemBars())
-                    }
+                    if (visible) controller.show(WindowInsets.Type.statusBars())
+                    else controller.hide(WindowInsets.Type.statusBars())
+                    if (showNavBar) controller.show(WindowInsets.Type.navigationBars())
+                    else controller.hide(WindowInsets.Type.navigationBars())
                 }
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val compatController = WindowCompat.getInsetsController(window, decorView)
@@ -861,12 +888,10 @@ class NativeBridgePlugin(private val activity: Activity): Plugin(activity) {
                     } else {
                         it.isAppearanceLightStatusBars = false
                     }
-                    if (visible) {
-                        it.show(WindowInsetsCompat.Type.statusBars())
-                        it.hide(WindowInsetsCompat.Type.navigationBars())
-                    } else {
-                        it.hide(WindowInsetsCompat.Type.systemBars())
-                    }
+                    if (visible) it.show(WindowInsetsCompat.Type.statusBars())
+                    else it.hide(WindowInsetsCompat.Type.statusBars())
+                    if (showNavBar) it.show(WindowInsetsCompat.Type.navigationBars())
+                    else it.hide(WindowInsetsCompat.Type.navigationBars())
                 }
             } else {
                 @Suppress("DEPRECATION")

@@ -45,6 +45,7 @@ export interface InstallPackageResponse {
 export interface SetSystemUIVisibilityRequest {
   visible: boolean;
   darkMode: boolean;
+  navigationBar?: boolean; // Android: keep the system navigation bar shown
 }
 
 export interface SetSystemUIVisibilityResponse {

@@ -57,6 +57,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
   const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(settings.alwaysOnTop);
   const [isAlwaysShowStatusBar, setIsAlwaysShowStatusBar] = useState(settings.alwaysShowStatusBar);
   const [isAlwaysShowBottomBar, setIsAlwaysShowBottomBar] = useState(settings.alwaysShowBottomBar);
+  const [isAlwaysShowTopBar, setIsAlwaysShowTopBar] = useState(settings.alwaysShowTopBar);
+  const [isAlwaysShowNavigationBar, setIsAlwaysShowNavigationBar] = useState(
+    settings.alwaysShowNavigationBar,
+  );
   const [isOpenLastBooks, setIsOpenLastBooks] = useState(settings.openLastBooks);
   const [isAutoImportBooksOnOpen, setIsAutoImportBooksOnOpen] = useState(
     settings.autoImportBooksOnOpen,
@@ -154,6 +158,18 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
     const newValue = !settings.alwaysShowStatusBar;
     saveSysSettings(envConfig, 'alwaysShowStatusBar', newValue);
     setIsAlwaysShowStatusBar(newValue);
+  };
+
+  const toggleAlwaysShowNavigationBar = () => {
+    const newValue = !settings.alwaysShowNavigationBar;
+    saveSysSettings(envConfig, 'alwaysShowNavigationBar', newValue);
+    setIsAlwaysShowNavigationBar(newValue);
+  };
+
+  const toggleAlwaysShowTopBar = () => {
+    const newValue = !settings.alwaysShowTopBar;
+    saveSysSettings(envConfig, 'alwaysShowTopBar', newValue);
+    setIsAlwaysShowTopBar(newValue);
   };
 
   const toggleAlwaysShowBottomBar = () => {
@@ -415,6 +431,20 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
           onClick={toggleAlwaysShowStatusBar}
         />
       )}
+
+      {appService?.isAndroidApp && (
+        <MenuItem
+          label={_('Always Show Navigation Bar')}
+          toggled={isAlwaysShowNavigationBar}
+          onClick={toggleAlwaysShowNavigationBar}
+        />
+      )}
+
+      <MenuItem
+        label={_('Always Show Top Bar')}
+        toggled={isAlwaysShowTopBar}
+        onClick={toggleAlwaysShowTopBar}
+      />
 
       <MenuItem
         label={_('Always Show Bottom Bar')}

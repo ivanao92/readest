@@ -137,7 +137,7 @@ const FoliateViewer: React.FC<{
   const _ = useTranslation();
   const searchParams = useSearchParams();
   const { appService, envConfig } = useEnv();
-  const { themeCode, isDarkMode, isIPhoneDuo } = useThemeStore();
+  const { themeCode, isDarkMode, isIPhoneDuo, systemUIVisible, statusBarHeight } = useThemeStore();
   const { settings } = useSettingsStore();
   const { loadFont, loadCustomFonts, getLoadedFonts, getAvailableFonts } = useCustomFontStore();
   // Per-field selectors — see store/readerProgressStore.ts header for the
@@ -963,7 +963,14 @@ const FoliateViewer: React.FC<{
     // The drawing dock stays up for the whole drawing session, so the text
     // makes room for it instead of running underneath.
     const drawingDock = viewState?.drawingEnabled ? getDrawingDockClearance(gridInsets) : null;
-    const topMargin = (showTopHeader ? insets.top : viewInsets.top) + moreTopInset;
+    // An always-shown top bar (h-11 below the status bar, as HeaderBar lays it out).
+    const topBarClearance = settings.alwaysShowTopBar
+      ? (systemUIVisible ? Math.max(insets.top, statusBarHeight) : insets.top) + 44
+      : 0;
+    const topMargin = Math.max(
+      (showTopHeader ? insets.top : viewInsets.top) + moreTopInset,
+      topBarClearance,
+    );
     // On iPhone Duo the horizontal safe-area insets are applied to the viewer
     // container itself (see the render below), not folded into these margins:
     // the paginator treats a horizontal margin as a gutter and puts only half
@@ -982,7 +989,7 @@ const FoliateViewer: React.FC<{
     viewRef.current?.renderer.setAttribute('margin-left', `${leftMargin}px`);
 
     if (viewSettings.scrolled) {
-      const headerVisible = showTopHeader;
+      const headerVisible = showTopHeader || topBarClearance > 0;
       const footerVisible = showBottomFooter;
       const safeBottomPadding = appService?.hasSafeAreaInset ? gridInsets.bottom * 0.33 : 0;
       const footerBarHeight = safeBottomPadding + viewSettings.marginBottomPx;
@@ -1211,6 +1218,9 @@ const FoliateViewer: React.FC<{
     viewState?.ttsEnabled,
     viewState?.drawingEnabled,
     settings.alwaysShowBottomBar,
+    settings.alwaysShowTopBar,
+    systemUIVisible,
+    statusBarHeight,
     // Switching Player Style changes whether a band is reserved at all.
     viewSettings?.ttsPlayerStyle,
     // footerReservesBand inputs: the band must collapse/return live when the

@@ -79,7 +79,11 @@ export const useTheme = ({
       } else {
         dismissSystemUI();
       }
-      setSystemUIVisibility({ visible, darkMode: isDarkMode }).then(() => {
+      setSystemUIVisibility({
+        visible,
+        darkMode: isDarkMode,
+        navigationBar: !!settings?.alwaysShowNavigationBar,
+      }).then(() => {
         // iPhone Duo's status bar carries a side safe-area inset of its own
         // (its strip), so re-read the insets for the new state. Other iOS
         // devices never did, and a re-read would change their top inset.
